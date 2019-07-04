@@ -8,9 +8,9 @@ package com.heliossoftwaredeveloper.examteramind
 
 object Constants {
     const val GPS_UPDATE_INTERVAL = 0L
-    const val GPS_UPDATE_MIN_DISTANCE = 5F
+    const val GPS_UPDATE_MIN_DISTANCE = 0.5F
 
-    const val LOCATION_DISTANCE_TOLERANCE = 50.0
+    const val LOCATION_DISTANCE_TOLERANCE = 13.5
 
     const val END_POINT_DESTINATION_LATITUDE = 14.5507605
     const val END_POINT_DESTINATION_LONGITUDE = 121.0512535

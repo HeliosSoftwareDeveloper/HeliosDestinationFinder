@@ -2,6 +2,7 @@ package com.heliossoftwaredeveloper.examteramind.Route
 
 import android.content.res.Resources
 import android.location.Location
+import android.os.AsyncTask
 import com.directions.route.*
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -17,7 +18,7 @@ import java.util.ArrayList
  *
  * Route Manager Class
  */
-class RouteManager(val resources : Resources, val mMap : GoogleMap, val callback : RouteManagerCallback){
+class RouteManager(private val resources : Resources, private val mMap : GoogleMap, private val callback : RouteManagerCallback){
 
     private val endDestination = LatLng(Constants.END_POINT_DESTINATION_LATITUDE, Constants.END_POINT_DESTINATION_LONGITUDE)
 
@@ -25,6 +26,8 @@ class RouteManager(val resources : Resources, val mMap : GoogleMap, val callback
     private var lastKnownRoutePoints = ArrayList<LatLng>()
     private var lastKnownRoutePoints2 = ArrayList<LatLng>()
     private var lastKnownRouteSegment = ArrayList<Segment>()
+    private var lastKnownDistance = 0
+    private var lastKnownDuration = 0
 
     fun routeCurrentLocation(location : Location) {
         if (!PolyUtil.isLocationOnPath(LatLng(location.latitude, location.longitude), lastKnownRoutePoints, true, LOCATION_DISTANCE_TOLERANCE)) {
@@ -58,6 +61,8 @@ class RouteManager(val resources : Resources, val mMap : GoogleMap, val callback
                         lastKnownRouteSegment.clear()
                         clearPolylines()
 
+                        lastKnownDistance = listRoute.first().distanceValue
+                        lastKnownDuration = listRoute.first().durationValue
                         lastKnownRoutePoints.addAll(listRoute.first().points)
                         lastKnownRoutePoints2.addAll(listRoute.first().points)
                         lastKnownRouteSegment.addAll(listRoute.first().segments)
@@ -72,18 +77,24 @@ class RouteManager(val resources : Resources, val mMap : GoogleMap, val callback
     }
 
     private fun routeFromCache(location : Location) {
-        CacheRouteTask(lastKnownRouteSegment, lastKnownRoutePoints, location, object : CacheRouteTask.CacheRouteTaskListener {
+        val listRoutePoints = lastKnownRoutePoints.clone() as ArrayList<LatLng>
+        val listRouteSegments = lastKnownRouteSegment.clone() as ArrayList<Segment>
+        CacheRouteTask(listRouteSegments, listRoutePoints, location, object : CacheRouteTask.CacheRouteTaskListener {
             override fun onCacheRouteTaskFinish(result: CacheRouteTask.CacheRouteTaskReturnType) {
-                callback.updateSegmentAdapter(result?.listRouteSegment!!)
-
+                lastKnownRouteSegment.clear()
+                lastKnownRouteSegment.addAll(result?.listRouteSegment)
                 if(lastKnownPolyline != null){
                     lastKnownPolyline!!.points = result?.listAllRoutePoints
 
                     lastKnownRoutePoints.clear()
                     lastKnownRoutePoints.addAll(result?.listAllRoutePoints)
                 }
+
+                callback.updateSegmentAdapter(result?.listRouteSegment!!)
+                val duration = (lastKnownDuration / 100) * ((result?.distanceLeft * 100) / lastKnownDistance)
+                callback.updateDurationDistanceLabel(result?.distanceLeft, duration)
             }
-        }).execute()
+        }).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR)
     }
 
     private fun clearPolylines() {
@@ -95,6 +106,7 @@ class RouteManager(val resources : Resources, val mMap : GoogleMap, val callback
         fun onRoutingSuccess(listRoute: ArrayList<Route>)
         fun onRoutingFailed(message : String)
         fun updateSegmentAdapter(listRouteSegment: ArrayList<Segment>)
+        fun updateDurationDistanceLabel(distanceLeft : Float, durationLeft : Float)
     }
 
 }

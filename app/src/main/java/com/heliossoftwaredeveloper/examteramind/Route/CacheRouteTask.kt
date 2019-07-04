@@ -6,8 +6,6 @@ import android.os.AsyncTask
 import com.directions.route.Segment
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
-import com.heliossoftwaredeveloper.examteramind.Constants.END_POINT_DESTINATION_LATITUDE
-import com.heliossoftwaredeveloper.examteramind.Constants.END_POINT_DESTINATION_LONGITUDE
 import com.heliossoftwaredeveloper.examteramind.Constants.LOCATION_DISTANCE_TOLERANCE
 import java.util.ArrayList
 
@@ -20,51 +18,29 @@ import java.util.ArrayList
 class CacheRouteTask(private val lastKnownRouteSegment : ArrayList<Segment>, private val lastKnownRoutePoints : ArrayList<LatLng>, private val location : Location, private val callback : CacheRouteTaskListener) :
         AsyncTask<Void, Void, CacheRouteTask.CacheRouteTaskReturnType>() {
 
-    private val endDestination = LatLng(END_POINT_DESTINATION_LATITUDE, END_POINT_DESTINATION_LONGITUDE)
-
     override fun doInBackground(vararg params: Void?): CacheRouteTaskReturnType? {
         var listRouteSegment = ArrayList<Segment>()
-        val segmentSize = lastKnownRouteSegment.size
 
         val listNextPathLocation = ArrayList<LatLng>()
         listNextPathLocation.add(LatLng(location.latitude, location.longitude))
+        var distanceLeft = 0F
         for (polyline in lastKnownRoutePoints) {
             val locationCurrentPolyline = Location(LocationManager.GPS_PROVIDER)
             locationCurrentPolyline.latitude = polyline.latitude
             locationCurrentPolyline.longitude = polyline.longitude
 
-            if (location.distanceTo(locationCurrentPolyline) > 30){
+            val distanceOfTwoLocation = location.distanceTo(locationCurrentPolyline)
+            if (distanceOfTwoLocation > 35){
                 listNextPathLocation.add(polyline)
+                distanceLeft+= distanceOfTwoLocation
             }
         }
-
-        lastKnownRouteSegment.forEachIndexed { index, element ->
-            val nextElementIndex = (index + 1)
-
-            var listRoutePoints = ArrayList<LatLng>()
-
-            if (nextElementIndex < segmentSize){
-                listRoutePoints.add(element.startPoint())
-                listRoutePoints.add(lastKnownRouteSegment[nextElementIndex].startPoint())
-
-                if (PolyUtil.isLocationOnPath(LatLng(location.latitude, location.longitude), listRoutePoints, true, LOCATION_DISTANCE_TOLERANCE)){
-                    listRouteSegment.add(element)
-                }
-            } else if (nextElementIndex == segmentSize) {
-                listRoutePoints.add(element.startPoint())
-                listRoutePoints.add(endDestination)
-
-                if (listRouteSegment.isNotEmpty()) {
-                    listRouteSegment.add(element)
-                } else {
-                    if (PolyUtil.isLocationOnPath(LatLng(location.latitude, location.longitude), listRoutePoints, true, LOCATION_DISTANCE_TOLERANCE)){
-                        listRouteSegment.add(element)
-                    }
-                }
+        lastKnownRouteSegment.forEach {
+            if (PolyUtil.isLocationOnPath(LatLng(location.latitude, location.longitude), listNextPathLocation, true, LOCATION_DISTANCE_TOLERANCE)){
+                listRouteSegment.add(it)
             }
         }
-
-        return CacheRouteTaskReturnType(listRouteSegment, listNextPathLocation)
+        return CacheRouteTaskReturnType(listRouteSegment, listNextPathLocation, distanceLeft)
     }
 
     override fun onPostExecute(result : CacheRouteTaskReturnType?) {
@@ -76,5 +52,5 @@ class CacheRouteTask(private val lastKnownRouteSegment : ArrayList<Segment>, pri
         fun onCacheRouteTaskFinish(result : CacheRouteTaskReturnType)
     }
 
-    data class CacheRouteTaskReturnType (val listRouteSegment: ArrayList<Segment>, val listAllRoutePoints: ArrayList<LatLng>)
+    data class CacheRouteTaskReturnType (val listRouteSegment: ArrayList<Segment>, val listAllRoutePoints: ArrayList<LatLng>, val distanceLeft : Float)
 }
