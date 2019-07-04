@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ExamTeramind</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="label_duration_distance">Duration: %1s (%2s)</string>
+    <string name="marker_title_nike">Marker in Nike Park</string>
+    <string name="loading_message">Loading Please Wait.</string>
+</resources>

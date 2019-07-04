@@ -1,0 +1,9 @@
+<resources>
+    <dimen name="suggested_route_view_height">300dp</dimen>
+
+    <dimen name="space_extra_small">2dp</dimen>
+    <dimen name="space_small">4dp</dimen>
+    <dimen name="space_medium">8dp</dimen>
+    <dimen name="space_standard">16dp</dimen>
+
+</resources>
