@@ -34,7 +34,7 @@ class CacheRouteTask(private val lastKnownRouteSegment : ArrayList<Segment>, pri
             }
         }
         lastKnownRouteSegment.forEach {
-            if (PolyUtil.isLocationOnPath(LatLng(location.latitude, location.longitude), listNextPathLocation, true, LOCATION_DISTANCE_TOLERANCE)){
+            if (PolyUtil.isLocationOnPath(it.startPoint(), listNextPathLocation, true, LOCATION_DISTANCE_TOLERANCE)){
                 listRouteSegment.add(it)
             }
         }
