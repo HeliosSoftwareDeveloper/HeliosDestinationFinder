@@ -119,8 +119,4 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, RouteManager.Route
     override fun updateSegmentAdapter(listRouteSegment: ArrayList<Segment>) {
         segmentListAdapter?.updateList(listRouteSegment)
     }
-
-    override fun updateDurationDistanceLabel(distanceLeft: Float, durationLeft : Float) {
-        txtDurationDistance.text = String.format(resources.getString(R.string.label_duration_distance2), durationLeft.toString(), distanceLeft.toString())
-    }
 }

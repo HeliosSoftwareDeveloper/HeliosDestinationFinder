@@ -91,8 +91,6 @@ class RouteManager(private val resources : Resources, private val mMap : GoogleM
                 }
 
                 callback.updateSegmentAdapter(result?.listRouteSegment!!)
-                val duration = (lastKnownDuration / 100) * ((result?.distanceLeft * 100) / lastKnownDistance)
-                callback.updateDurationDistanceLabel(result?.distanceLeft, duration)
             }
         }).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR)
     }
@@ -106,7 +104,5 @@ class RouteManager(private val resources : Resources, private val mMap : GoogleM
         fun onRoutingSuccess(listRoute: ArrayList<Route>)
         fun onRoutingFailed(message : String)
         fun updateSegmentAdapter(listRouteSegment: ArrayList<Segment>)
-        fun updateDurationDistanceLabel(distanceLeft : Float, durationLeft : Float)
     }
-
 }

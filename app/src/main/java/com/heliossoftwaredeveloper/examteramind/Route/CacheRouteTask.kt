@@ -3,6 +3,7 @@ package com.heliossoftwaredeveloper.examteramind.Route
 import android.location.Location
 import android.location.LocationManager
 import android.os.AsyncTask
+import android.util.Log
 import com.directions.route.Segment
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
@@ -23,16 +24,13 @@ class CacheRouteTask(private val lastKnownRouteSegment : ArrayList<Segment>, pri
 
         val listNextPathLocation = ArrayList<LatLng>()
         listNextPathLocation.add(LatLng(location.latitude, location.longitude))
-        var distanceLeft = 0F
         for (polyline in lastKnownRoutePoints) {
             val locationCurrentPolyline = Location(LocationManager.GPS_PROVIDER)
             locationCurrentPolyline.latitude = polyline.latitude
             locationCurrentPolyline.longitude = polyline.longitude
 
-            val distanceOfTwoLocation = location.distanceTo(locationCurrentPolyline)
-            if (distanceOfTwoLocation > 35){
+            if (location.distanceTo(locationCurrentPolyline) > 35F){
                 listNextPathLocation.add(polyline)
-                distanceLeft+= distanceOfTwoLocation
             }
         }
         lastKnownRouteSegment.forEach {
@@ -40,7 +38,7 @@ class CacheRouteTask(private val lastKnownRouteSegment : ArrayList<Segment>, pri
                 listRouteSegment.add(it)
             }
         }
-        return CacheRouteTaskReturnType(listRouteSegment, listNextPathLocation, distanceLeft)
+        return CacheRouteTaskReturnType(listRouteSegment, listNextPathLocation)
     }
 
     override fun onPostExecute(result : CacheRouteTaskReturnType?) {
@@ -52,5 +50,5 @@ class CacheRouteTask(private val lastKnownRouteSegment : ArrayList<Segment>, pri
         fun onCacheRouteTaskFinish(result : CacheRouteTaskReturnType)
     }
 
-    data class CacheRouteTaskReturnType (val listRouteSegment: ArrayList<Segment>, val listAllRoutePoints: ArrayList<LatLng>, val distanceLeft : Float)
+    data class CacheRouteTaskReturnType (val listRouteSegment: ArrayList<Segment>, val listAllRoutePoints: ArrayList<LatLng>)
 }
